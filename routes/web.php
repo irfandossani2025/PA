@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssistantChatController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MacAgentCommandController;
@@ -12,6 +13,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'owner'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::post('/chat', AssistantChatController::class)->middleware('throttle:assistant-chat')->name('chat.store');
     Route::post('/commands', [MacAgentCommandController::class, 'store'])->name('commands.store');
     Route::post('/commands/{command}/approve', [MacAgentCommandController::class, 'approve'])->name('commands.approve');
     Route::post('/commands/{command}/cancel', [MacAgentCommandController::class, 'cancel'])->name('commands.cancel');

@@ -18,8 +18,7 @@ class PersonalAssistantDashboardTest extends TestCase
             ->get('/')
             ->assertOk()
             ->assertSee('IRFAN PA')
-            ->assertSee('Private Mac command centre')
-            ->assertSee('Create safe Mac command')
-            ->assertSee('Command review');
+            ->assertSee('How can I help?')
+            ->assertSee('Message IRFAN PA');
     }
 }
