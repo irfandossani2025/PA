@@ -17,6 +17,7 @@
         .status { padding: 5px 9px; font-size: .8rem; background: #193353; border-radius: 20px; }
         .approved { background: #174c3c; }
         .cancelled, .failed { background: #542735; }
+        .completed { background: #174c3c; }
         .row { padding: 13px 0; border-top: 1px solid #243a59; }
         .actions { display: flex; gap: 8px; align-items: flex-start; }
         .actions form { margin: 0; }
@@ -94,11 +95,17 @@
 
         <section class="panel">
             <h2>Command review</h2>
+            @if ($commands->contains(fn ($command): bool => in_array($command->status, ['pending', 'approved', 'dispatched'], true)))
+                <p class="muted" data-command-in-progress>PA refreshes this list automatically while a command is in progress.</p>
+            @endif
             @forelse ($commands as $command)
                 <div class="row">
                     <div>
                         <strong>{{ $command->label ?? $command->action }}</strong>
                         <div class="muted">{{ $command->device->name }} · {{ $command->action }} · {{ $command->created_at->diffForHumans() }}</div>
+                        @if ($command->result['message'] ?? false)
+                            <div class="muted">Result: {{ $command->result['message'] }}</div>
+                        @endif
                     </div>
                     <div class="actions">
                         <span class="status {{ $command->status }}">{{ $command->status }}</span>
@@ -121,5 +128,10 @@
             @endforelse
         </section>
     </main>
+    <script>
+        if (document.querySelector('[data-command-in-progress]')) {
+            window.setTimeout(() => window.location.reload(), 15000);
+        }
+    </script>
 </body>
 </html>

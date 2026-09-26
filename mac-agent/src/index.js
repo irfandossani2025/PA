@@ -23,13 +23,15 @@ async function run(config) {
         throw new Error('The PA server returned an invalid heartbeat response.');
     }
 
+    const commandCount = response.commands.length;
+
     for (const command of response.commands) {
         await executeAndQueueReceipt(command);
     }
 
     await flushReceipts(pa);
 
-    console.log(`PA heartbeat completed at ${new Date().toISOString()}.`);
+    console.log(`PA heartbeat completed at ${new Date().toISOString()}. Approved commands received: ${commandCount}.`);
 }
 
 async function executeAndQueueReceipt(command) {
