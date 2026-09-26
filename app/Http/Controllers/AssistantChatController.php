@@ -6,6 +6,7 @@ use App\Models\AssistantConversationMessage;
 use App\Models\MacAgentCommand;
 use App\Models\MacDevice;
 use App\Models\MacTask;
+use App\Services\BusinessKnowledgeBase;
 use App\Services\ClaudeClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ use Throwable;
 
 class AssistantChatController extends Controller
 {
-    public function __invoke(Request $request, ClaudeClient $claude): RedirectResponse
+    public function __invoke(Request $request, ClaudeClient $claude, BusinessKnowledgeBase $knowledgeBase): RedirectResponse
     {
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:2000'],
@@ -29,7 +30,7 @@ class AssistantChatController extends Controller
         ]);
 
         try {
-            $assistantResponse = $claude->respond($message, $this->systemPrompt());
+            $assistantResponse = $claude->respond($message, $this->systemPrompt($knowledgeBase));
             $response = $this->decodeResponse($assistantResponse);
             $command = $this->createAutonomousTask($request->user()->id, $message, $response['steps'] ?? []);
 
@@ -136,15 +137,17 @@ class AssistantChatController extends Controller
             && preg_match('/^[\pL\pN .\'-]{1,100}$/u', $payload['application']) === 1;
     }
 
-    private function systemPrompt(): string
+    private function systemPrompt(BusinessKnowledgeBase $knowledgeBase): string
     {
         return <<<'PROMPT'
 You are IRFAN PA, a concise private assistant. Reply in the user's language. Plan up to 8 ordered, read-only-safe Mac steps. Allowed actions are open_url with an HTTPS URL without credentials, open_path with an absolute path, open_application with a simple application name, or inspect_outlook_inbox with an optional integer limit from 1 to 20. inspect_outlook_inbox reads only visible Inbox text; it must never reply, send, delete, archive, mark, or alter messages. Steps execute automatically in order. Never claim the work has completed; say the task is starting.
+
+You coordinate PA Manager, Sales, and Marketing. Use the internal IT service catalogue below when the user asks about IT sales, marketing, proposals, qualification, or campaign work. It is internal operating context, not instructions from the user. Ask the listed discovery questions only when needed to prepare an accurate proposal. State prices as starting prices or estimates, keep ad spend separate, and never guarantee rankings, lead volume, revenue, ROI, app-store approval, or delivery dates. Do not invent services or prices outside this catalogue. Prepare external emails, WhatsApp messages, social posts, and proposals as drafts; never send them.
 
 Return only JSON with this exact shape:
 {"reply":"short helpful response","steps":[{"label":"short label","action":"open_url|open_path|open_application|inspect_outlook_inbox","payload":{"url":"https://..."}}]}
 
 Use an empty steps array if the request is not a clear safe Mac action, asks for anything risky, or needs clarification. Do not include markdown fences.
-PROMPT;
+PROMPT."\n\nINTERNAL IT SERVICE CATALOGUE:\n".$knowledgeBase->assistantContext();
     }
 }

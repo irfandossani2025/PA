@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MacDevice;
 use App\Models\User;
+use App\Services\BusinessKnowledgeBase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -51,5 +52,31 @@ class AssistantChatTest extends TestCase
             'requires_approval' => false,
         ]);
         Http::assertSent(fn (Request $request): bool => $request->hasHeader('x-api-key'));
+        Http::assertSent(fn (Request $request): bool => str($request->data()['system'])
+            ->contains('No internal IT service catalogue has been installed yet'));
+    }
+
+    public function test_it_sales_requests_include_the_installed_internal_catalogue_in_the_pa_context(): void
+    {
+        config()->set('services.anthropic.key', 'test-key');
+        config()->set('services.anthropic.model', 'test-model');
+        Http::preventStrayRequests();
+        Http::fake([
+            '*' => Http::response([
+                'content' => [[
+                    'type' => 'text',
+                    'text' => '{"reply":"I will qualify this lead using our IT service catalogue.","steps":[]}',
+                ]],
+            ]),
+        ]);
+        app(BusinessKnowledgeBase::class)->installDefaultItOfferings();
+        $owner = User::factory()->create(['is_owner' => true]);
+
+        $this->actingAs($owner)
+            ->post('/chat', ['message' => 'Prepare a proposal for a business that needs a customer portal.'])
+            ->assertRedirect(route('dashboard'));
+
+        Http::assertSent(fn (Request $request): bool => str($request->data()['system'])
+            ->contains('Website & Portal Development'));
     }
 }
