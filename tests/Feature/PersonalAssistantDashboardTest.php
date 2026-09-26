@@ -2,18 +2,24 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PersonalAssistantDashboardTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_dashboard_renders_the_private_assistant_control_centre(): void
     {
-        $response = $this->get('/');
+        $owner = User::factory()->create(['is_owner' => true]);
 
-        $response->assertOk();
-        $response->assertSee('IRFAN PA');
-        $response->assertSee('Your assistant is taking shape.');
-        $response->assertSee('API key ready — add it privately in Plesk to activate the brain.');
-        $response->assertSee('Private command centre');
+        $this->actingAs($owner)
+            ->get('/')
+            ->assertOk()
+            ->assertSee('IRFAN PA')
+            ->assertSee('Private Mac command centre')
+            ->assertSee('Create safe Mac command')
+            ->assertSee('Command review');
     }
 }

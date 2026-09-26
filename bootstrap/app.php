@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureMacAgentToken;
+use App\Http\Middleware\EnsureOwner;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'mac-agent' => EnsureMacAgentToken::class,
+            'owner' => EnsureOwner::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

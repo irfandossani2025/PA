@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['mac_device_id', 'action', 'payload', 'status', 'requires_approval', 'result', 'claimed_at', 'completed_at'])]
+#[Fillable(['mac_device_id', 'label', 'action', 'payload', 'status', 'requires_approval', 'result', 'claimed_at', 'completed_at'])]
 class MacAgentCommand extends Model
 {
     /** @use HasFactory<MacAgentCommandFactory> */
