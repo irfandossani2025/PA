@@ -13,12 +13,12 @@ export class PaClient {
         });
     }
 
-    async completeCommand(commandId, success, message) {
+    async completeCommand(commandId, success, result) {
         return this.request(`/api/mac-agent/commands/${commandId}/complete`, {
             method: 'POST',
             body: JSON.stringify({
                 success,
-                result: { message },
+                result,
             }),
         });
     }

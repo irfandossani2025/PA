@@ -116,7 +116,7 @@
                                         <span class="pill {{ $message->command->status }}">{{ $message->command->status }}</span>
                                     </div>
                                     <div class="draft-body">
-                                        {{ $message->command->action === 'open_url' ? $message->command->payload['url'] : ($message->command->action === 'open_path' ? $message->command->payload['path'] : $message->command->payload['application']) }}
+                                        {{ $message->command->action === 'open_url' ? $message->command->payload['url'] : ($message->command->action === 'open_path' ? $message->command->payload['path'] : ($message->command->action === 'inspect_outlook_inbox' ? 'Visible Outlook Inbox only' : $message->command->payload['application'])) }}
                                         <br>For {{ $message->command->device->name }}
                                         @if ($message->command->result['message'] ?? false)
                                             <div class="result">{{ $message->command->result['message'] }}</div>

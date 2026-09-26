@@ -40,13 +40,13 @@ async function executeAndQueueReceipt(command) {
     try {
         receipt = {
             commandId: command.id,
-            message: await executeApprovedCommand(command),
+            result: await executeApprovedCommand(command),
             success: true,
         };
     } catch (error) {
         receipt = {
             commandId: command?.id,
-            message: sanitizeError(error),
+            result: { message: sanitizeError(error) },
             success: false,
         };
     }
@@ -66,7 +66,7 @@ async function flushReceipts(pa) {
 
     for (const receipt of receipts) {
         try {
-            await pa.completeCommand(receipt.commandId, receipt.success, receipt.message);
+            await pa.completeCommand(receipt.commandId, receipt.success, receipt.result);
         } catch (error) {
             console.error(`Could not deliver completion receipt for command ${receipt.commandId}: ${sanitizeError(error)}`);
             undeliveredReceipts.push(receipt);

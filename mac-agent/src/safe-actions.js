@@ -13,12 +13,13 @@ export async function executeApprovedCommand(command, homeDirectory = os.homedir
 
     const safeCommand = await validateApprovedCommand(command, homeDirectory);
 
-    await execFileAsync('open', safeCommand.arguments, {
-        timeout: 15_000,
-        windowsHide: true,
-    });
+    if (safeCommand.action === 'inspect_outlook_inbox') {
+        return inspectOutlookInbox(safeCommand.limit);
+    }
 
-    return safeCommand.message;
+    await execFileAsync('open', safeCommand.arguments, { timeout: 15_000, windowsHide: true });
+
+    return { message: safeCommand.message };
 }
 
 export async function validateApprovedCommand(command, homeDirectory = os.homedir()) {
@@ -42,7 +43,44 @@ export async function validateApprovedCommand(command, homeDirectory = os.homedi
         return validateOpenApplication(command.payload);
     }
 
+    if (command.action === 'inspect_outlook_inbox') {
+        return validateInspectOutlookInbox(command.payload);
+    }
+
     throw new Error(`The command action "${command.action}" is not allowed by this Mac Agent.`);
+}
+
+function validateInspectOutlookInbox(payload) {
+    const limit = payload.limit ?? 12;
+
+    if (!Number.isInteger(limit) || limit < 1 || limit > 20 || Object.keys(payload).some((key) => key !== 'limit')) {
+        throw new Error('An inspect_outlook_inbox command accepts only a limit from 1 to 20.');
+    }
+
+    return { action: 'inspect_outlook_inbox', limit };
+}
+
+async function inspectOutlookInbox(limit) {
+    await execFileAsync('open', ['-a', 'Microsoft Outlook'], { timeout: 15_000, windowsHide: true });
+
+    const script = `
+tell application "Microsoft Outlook" to activate
+delay 2
+tell application "System Events"
+    tell process "Microsoft Outlook"
+        set frontmost to true
+        set inboxText to value of every static text of window 1
+        set AppleScript's text item delimiters to linefeed
+        return inboxText as text
+    end tell
+end tell`;
+    const { stdout } = await execFileAsync('osascript', ['-e', script], { timeout: 30_000, windowsHide: true, maxBuffer: 256_000 });
+    const outlookText = stdout.trim().split(/\r?\n/).filter(Boolean).slice(0, limit * 12).join('\n').slice(0, 12_000);
+
+    return {
+        message: outlookText === '' ? 'Outlook opened, but no readable Inbox text was available.' : 'Read the visible Outlook Inbox text for summarization.',
+        outlook_text: outlookText,
+    };
 }
 
 function validateOpenUrl(payload) {

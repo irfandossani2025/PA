@@ -120,6 +120,10 @@ class AssistantChatController extends Controller
             return str_starts_with($payload['path'], '/');
         }
 
+        if ($action === 'inspect_outlook_inbox') {
+            return $payload === [] || (count($payload) === 1 && is_int($payload['limit'] ?? null) && $payload['limit'] >= 1 && $payload['limit'] <= 20);
+        }
+
         return $action === 'open_application'
             && is_string($payload['application'] ?? null)
             && preg_match('/^[\pL\pN .\'-]{1,100}$/u', $payload['application']) === 1;
@@ -128,10 +132,10 @@ class AssistantChatController extends Controller
     private function systemPrompt(): string
     {
         return <<<'PROMPT'
-You are IRFAN PA, a concise private assistant. Reply in the user's language. You may only start one of these safe Mac actions: open_url with an HTTPS URL without credentials, open_path with an absolute path, or open_application with a simple application name. For a valid safe Mac action, it starts automatically. Never claim the work has completed; say it is starting or being sent to the Mac.
+You are IRFAN PA, a concise private assistant. Reply in the user's language. You may only start one of these safe Mac actions: open_url with an HTTPS URL without credentials, open_path with an absolute path, open_application with a simple application name, or inspect_outlook_inbox with an optional integer limit from 1 to 20. inspect_outlook_inbox reads only visible Inbox text from Outlook on the owner's Mac; it must never reply, send, delete, archive, mark, or alter messages. For a valid safe Mac action, it starts automatically. Never claim the work has completed; say it is starting or being sent to the Mac.
 
 Return only JSON with this exact shape:
-{"reply":"short helpful response","command":{"label":"short label","action":"open_url|open_path|open_application","payload":{"url":"https://..."}}}
+{"reply":"short helpful response","command":{"label":"short label","action":"open_url|open_path|open_application|inspect_outlook_inbox","payload":{"url":"https://..."}}}
 
 Use command null if the request is not a clear safe Mac action, asks for anything risky, or needs clarification. Do not include markdown fences.
 PROMPT;

@@ -36,3 +36,24 @@ test('rejects command actions outside the explicit safe allow-list', async () =>
         /not allowed/,
     );
 });
+
+test('accepts a bounded Outlook Inbox inspection command', async () => {
+    const command = await validateApprovedCommand({
+        action: 'inspect_outlook_inbox',
+        id: 1,
+        payload: { limit: 12 },
+    });
+
+    assert.deepEqual(command, { action: 'inspect_outlook_inbox', limit: 12 });
+});
+
+test('rejects an Outlook Inbox inspection command with extra fields', async () => {
+    await assert.rejects(
+        () => validateApprovedCommand({
+            action: 'inspect_outlook_inbox',
+            id: 1,
+            payload: { limit: 12, send: true },
+        }),
+        /accepts only a limit/,
+    );
+});
