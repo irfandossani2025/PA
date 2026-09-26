@@ -13,6 +13,7 @@ class PersonalAssistantDashboardTest extends TestCase
         $response->assertOk();
         $response->assertSee('IRFAN PA');
         $response->assertSee('Your assistant is taking shape.');
-        $response->assertSee('Local foundation only — not yet deployed');
+        $response->assertSee('API key ready — add it privately in Plesk to activate the brain.');
+        $response->assertSee('Private command centre');
     }
 }

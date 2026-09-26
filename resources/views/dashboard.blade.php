@@ -56,14 +56,14 @@
             <p class="eyebrow">Personal operations, in one calm place</p>
             <h1>Your assistant is taking shape.</h1>
             <p class="intro">A secure, always-available workspace for the work you decide to delegate: requests, follow-ups, approvals, and the record of what happened.</p>
-            <div class="status"><span class="dot"></span> Foundation online locally</div>
+            <div class="status"><span class="dot"></span> Private control centre online</div>
 
             <section class="grid" aria-label="Assistant overview">
                 <article class="panel tasks">
                     <div class="section-heading"><h2>First workspace</h2><span class="count">3 setup items</span></div>
                     <div class="task-list">
                         <div class="task"><span class="check"></span><div><strong>Protect the workspace</strong><span>Owner sign-in and access rules come before external connections.</span></div></div>
-                        <div class="task"><span class="check"></span><div><strong>Connect your work channels</strong><span>Only services you approve will be connected, one at a time.</span></div></div>
+                        <div class="task"><span class="check"></span><div><strong>Claude brain</strong><span>{{ $claudeConfigured ? 'Connected privately on the server. Mac pairing is the next step.' : 'API key ready — add it privately in Plesk to activate the brain.' }}</span></div></div>
                         <div class="task"><span class="check"></span><div><strong>Define approval limits</strong><span>Your assistant can prepare work; actions with impact stay reviewable.</span></div></div>
                     </div>
                 </article>
@@ -72,7 +72,7 @@
                     <div class="focus-label">Design principle</div>
                     <h2>Useful autonomy, clear control.</h2>
                     <p>Every future task will show its status, source, and next action—so you always know what your assistant is doing for you.</p>
-                    <div class="ready"><b>Ready for the next build step:</b><br>owner access and a private task inbox.</div>
+                    <div class="ready"><b>Next controlled connection:</b><br>Pair your Mac with a revocable device token — never with the Claude API key.</div>
                 </aside>
             </section>
 
@@ -82,7 +82,7 @@
                 <article class="panel timeline-entry"><span class="step">03</span><div><strong>Approved integrations</strong><span>Connect email, calendar, and other work tools with scoped access.</span></div></article>
             </section>
 
-            <footer>IRFAN PA · Built for Irfan Dossani · Local foundation only — not yet deployed</footer>
+            <footer>IRFAN PA · Built for Irfan Dossani · Private command centre</footer>
         </main>
     </body>
 </html>

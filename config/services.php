@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL'),
+        'url' => env('ANTHROPIC_API_URL', 'https://api.anthropic.com/v1/messages'),
+        'version' => env('ANTHROPIC_API_VERSION', '2023-06-01'),
+    ],
+
 ];
