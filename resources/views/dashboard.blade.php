@@ -144,7 +144,7 @@
                 <textarea name="message" rows="1" maxlength="2000" required autofocus placeholder="Message IRFAN PA…"></textarea>
                 <button class="send" aria-label="Send message">↑</button>
             </form>
-            <p class="hint">PA prepares safe drafts. Your approval is always required before your Mac acts.</p>
+            <p class="hint">Safe Mac tasks start automatically. PA will ask before sending an email, WhatsApp message, or other external communication.</p>
         </div>
     </div>
 
