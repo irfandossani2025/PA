@@ -53,7 +53,7 @@ class AssistantChatTest extends TestCase
         ]);
         Http::assertSent(fn (Request $request): bool => $request->hasHeader('x-api-key'));
         Http::assertSent(fn (Request $request): bool => str($request->data()['system'])
-            ->contains('No internal IT service catalogue has been installed yet'));
+            ->contains('No internal business catalogue has been installed yet'));
     }
 
     public function test_it_sales_requests_include_the_installed_internal_catalogue_in_the_pa_context(): void

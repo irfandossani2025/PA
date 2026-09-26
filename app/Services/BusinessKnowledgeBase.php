@@ -10,11 +10,10 @@ class BusinessKnowledgeBase
     /**
      * @return Collection<int, ServiceOffering>
      */
-    public function activeItOfferings(): Collection
+    public function activeOfferings(): Collection
     {
         return ServiceOffering::query()
             ->active()
-            ->where('business_area', 'it')
             ->orderBy('position')
             ->orderBy('id')
             ->get();
@@ -140,15 +139,93 @@ class BusinessKnowledgeBase
             );
         }
 
-        return count($offerings);
+        return count($offerings) + $this->installDefaultCorporateGiftSources();
+    }
+
+    private function installDefaultCorporateGiftSources(): int
+    {
+        $sources = [
+            [
+                'slug' => 'corporate-gifts-luxury-trading',
+                'name' => 'Luxury Trading Corporate Gifts',
+                'category' => 'Approved supplier source',
+                'starting_price_omr' => null,
+                'price_note' => 'Request current supplier quotation and availability before preparing a customer proposal.',
+                'summary' => 'Approved corporate-gift source for branded notebooks, organizers, drinkware, bags, technology gifts, pens, flash drives, gift sets, eco-friendly items, and customization.',
+                'capabilities' => ['Notebooks and organizers', 'Drinkware', 'Bags', 'Technology gifts and charging accessories', 'Pens and flash drives', 'Gift sets and boxes', 'Eco-friendly items', 'Custom branding'],
+                'sales_playbook' => [
+                    'ideal_for' => ['Premium corporate gifting', 'Branded technology and office gifts', 'Eco-friendly gift programs', 'Executive and event gift sets'],
+                    'discovery_questions' => ['What is the recipient profile and occasion?', 'How many units are required?', 'What is the target budget per recipient in OMR?', 'Which branding method or logo files are available?', 'What is the required delivery date and location?'],
+                    'qualification_note' => 'Check live stock, customization feasibility, lead time, and supplier cost privately. Never promise availability or reveal supplier cost in a customer quotation.',
+                ],
+                'position' => 110,
+            ],
+            [
+                'slug' => 'corporate-gifts-mtc',
+                'name' => 'MTC Promotional Gifts',
+                'category' => 'Approved supplier source',
+                'starting_price_omr' => null,
+                'price_note' => 'Request current supplier quotation and availability before preparing a customer proposal.',
+                'summary' => 'Approved promotional-product source with technology gifts, drinkware, stationery, apparel, bags, awards, packaging, eco-friendly products, and print-related options.',
+                'capabilities' => ['Technology gifts', 'Drinkware and bottles', 'Stationery and notebooks', 'Apparel and bags', 'Awards, plaques, and trophies', 'Packaging', 'Eco-friendly gifts', 'ID and event products'],
+                'sales_playbook' => [
+                    'ideal_for' => ['Large promotional campaigns', 'Employee and event giveaways', 'Awards and recognition', 'Branded merchandise programs'],
+                    'discovery_questions' => ['Is this for an event, employee program, client gift, or campaign?', 'What quantities, target delivery date, and destination apply?', 'Are there branding colors or printing requirements?', 'Does the customer need gift boxes or packaging?'],
+                    'qualification_note' => 'Check live stock, customization feasibility, lead time, and supplier cost privately. Never promise availability or reveal supplier cost in a customer quotation.',
+                ],
+                'position' => 120,
+            ],
+            [
+                'slug' => 'corporate-gifts-jasani',
+                'name' => 'Jasani Corporate Gifts',
+                'category' => 'Approved supplier source',
+                'starting_price_omr' => null,
+                'price_note' => 'Request current supplier quotation and availability before preparing a customer proposal.',
+                'summary' => 'Approved UAE corporate-gift supplier source for branded promotional gifts and custom corporate-gifting requirements.',
+                'capabilities' => ['Corporate gifts', 'Promotional giveaways', 'Custom-branded merchandise', 'Event and employee gifting'],
+                'sales_playbook' => [
+                    'ideal_for' => ['Custom corporate-gift briefs', 'Client and employee appreciation', 'Promotional product sourcing'],
+                    'discovery_questions' => ['What is the occasion and recipient profile?', 'What quantity and delivery deadline apply?', 'What brand assets and customization are required?', 'What is the OMR budget per unit or total budget?'],
+                    'qualification_note' => 'Confirm the precise product range, live stock, customization feasibility, lead time, and private supplier cost before proposing options.',
+                ],
+                'position' => 130,
+            ],
+            [
+                'slug' => 'corporate-gifts-hakplus',
+                'name' => 'Hakplus Corporate Gifts',
+                'category' => 'Approved supplier source',
+                'starting_price_omr' => null,
+                'price_note' => 'Request current supplier quotation and availability before preparing a customer proposal.',
+                'summary' => 'Approved UAE supplier source for bulk customized corporate gifts and branded promotional products.',
+                'capabilities' => ['Bulk corporate gifts', 'Custom-branded products', 'Promotional giveaways', 'Business and event gifting'],
+                'sales_playbook' => [
+                    'ideal_for' => ['Bulk customized orders', 'Promotional campaigns', 'Corporate events and client gifts'],
+                    'discovery_questions' => ['What product type fits the recipient and occasion?', 'What is the required quantity?', 'What branding, packaging, and delivery timeline are needed?', 'What is the target OMR budget?'],
+                    'qualification_note' => 'Confirm product selection, live stock, customization feasibility, lead time, and private supplier cost before a customer proposal.',
+                ],
+                'position' => 140,
+            ],
+        ];
+
+        foreach ($sources as $source) {
+            ServiceOffering::query()->updateOrCreate(
+                ['slug' => $source['slug']],
+                array_merge($source, [
+                    'business_area' => 'corporate_gifts',
+                    'is_active' => true,
+                ]),
+            );
+        }
+
+        return count($sources);
     }
 
     public function assistantContext(): string
     {
-        $offerings = $this->activeItOfferings();
+        $offerings = $this->activeOfferings();
 
         if ($offerings->isEmpty()) {
-            return 'No internal IT service catalogue has been installed yet. Do not invent offerings, prices, or delivery commitments.';
+            return 'No internal business catalogue has been installed yet. Do not invent offerings, product sources, prices, or delivery commitments.';
         }
 
         return $offerings->map(function (ServiceOffering $offering): string {
@@ -158,7 +235,8 @@ class BusinessKnowledgeBase
                 : 'Starting price: OMR '.$offering->starting_price_omr.'. '.$offering->price_note;
 
             return implode("\n", [
-                "SERVICE: {$offering->name} ({$offering->category})",
+                "BUSINESS AREA: {$offering->business_area}",
+                "OFFERING OR SOURCE: {$offering->name} ({$offering->category})",
                 "SUMMARY: {$offering->summary}",
                 "PRICE: {$price}",
                 'CAPABILITIES: '.implode('; ', $offering->capabilities),

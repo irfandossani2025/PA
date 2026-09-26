@@ -18,7 +18,7 @@ class InstallBusinessKnowledge extends Command
     {
         $count = $knowledgeBase->installDefaultItOfferings();
 
-        $this->info("Installed or refreshed {$count} IT service offerings for PA Sales and Marketing.");
+        $this->info("Installed or refreshed {$count} IT services and corporate-gift sources for PA Sales and Marketing.");
 
         return self::SUCCESS;
     }
