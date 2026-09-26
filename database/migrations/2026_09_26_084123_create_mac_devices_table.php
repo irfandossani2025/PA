@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('token_hash', 64)->unique();
-            $table->json('last_status')->nullable();
+            $table->longText('last_status')->nullable();
             $table->timestamp('last_seen_at')->nullable();
             $table->timestamps();
         });

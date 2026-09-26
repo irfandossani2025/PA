@@ -15,10 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('mac_device_id')->constrained()->cascadeOnDelete();
             $table->string('action');
-            $table->json('payload')->nullable();
+            $table->longText('payload')->nullable();
             $table->string('status', 30)->default('pending');
             $table->boolean('requires_approval')->default(true);
-            $table->json('result')->nullable();
+            $table->longText('result')->nullable();
             $table->timestamp('claimed_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
