@@ -16,6 +16,17 @@ class DashboardController extends Controller
             'claudeConfigured' => $claude->isConfigured(),
             'commands' => MacAgentCommand::query()->with('device')->latest()->limit(20)->get(),
             'devices' => MacDevice::query()->orderBy('name')->get(),
+            'officeAgents' => [
+                ['name' => 'PA Manager', 'role' => 'Coordinates work', 'state' => 'available'],
+                ['name' => 'Executive Assistant', 'role' => 'Email, calendar & follow-ups', 'state' => 'available'],
+                ['name' => 'Designer', 'role' => 'Branding & visual assets', 'state' => 'ready'],
+                ['name' => 'Full-Stack Developer', 'role' => 'Websites & automation', 'state' => 'ready'],
+                ['name' => 'UI/UX Designer', 'role' => 'User experience', 'state' => 'ready'],
+                ['name' => 'SEO', 'role' => 'Search visibility', 'state' => 'ready'],
+                ['name' => 'Marketing', 'role' => 'Lead generation', 'state' => 'ready'],
+                ['name' => 'Sales', 'role' => 'Outreach & follow-up', 'state' => 'ready'],
+                ['name' => 'Social Media', 'role' => 'Content & campaigns', 'state' => 'ready'],
+            ],
             'messages' => AssistantConversationMessage::query()
                 ->whereBelongsTo(request()->user())
                 ->with('command.device')

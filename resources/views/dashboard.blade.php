@@ -55,6 +55,9 @@
         .send { display: grid; width: 32px; height: 32px; place-items: center; color: #151515; background: #fff; border: 0; border-radius: 50%; }
         .hint { margin: 9px 0 0; text-align: center; color: #989898; font-size: .73rem; }
         .notice { width: min(780px, calc(100% - 34px)); margin: 18px auto 0; padding: 10px 14px; color: #ffe3a3; background: #4d3a13; border-radius: 10px; }
+        .office { width: min(1000px, calc(100% - 34px)); margin: 24px auto 0; padding: 18px; background: #272727; border: 1px solid #414141; border-radius: 16px; }
+        .office h2 { margin: 0; font-size: 1rem; }.office p { margin: 5px 0 16px; color: #aaa; font-size: .86rem; }
+        .agent-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); gap:10px; }.agent { padding:12px; background:#202020; border:1px solid #393939; border-radius:12px; }.agent strong { display:block; }.agent span { display:block; margin-top:5px; color:#aaa; font-size:.76rem; }.agent em { display:inline-block; margin-top:10px; padding:3px 7px; color:#b5f5c5; background:#173925; border-radius:99px; font-size:.7rem; font-style:normal; }
         @media (max-width: 720px) {
             .app { display: block; }
             .sidebar { display: none; }
@@ -95,6 +98,15 @@
             @if ($errors->any())
                 <div class="notice">{{ $errors->first() }}</div>
             @endif
+            <section class="office">
+                <h2>Your virtual office</h2>
+                <p>You are the Boss. PA Manager delegates outcome-based work to the right specialist and reports verified results here.</p>
+                <div class="agent-grid">
+                    @foreach ($officeAgents as $agent)
+                        <article class="agent"><strong>{{ $agent['name'] }}</strong><span>{{ $agent['role'] }}</span><em>{{ $agent['state'] }}</em></article>
+                    @endforeach
+                </div>
+            </section>
 
             <section class="conversation">
                 @if ($messages->isEmpty())
