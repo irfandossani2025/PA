@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['mac_device_id', 'label', 'action', 'payload', 'status', 'requires_approval', 'result', 'claimed_at', 'completed_at'])]
+#[Fillable(['mac_device_id', 'mac_task_id', 'sequence', 'label', 'action', 'payload', 'status', 'requires_approval', 'result', 'claimed_at', 'completed_at'])]
 class MacAgentCommand extends Model
 {
     /** @use HasFactory<MacAgentCommandFactory> */
@@ -20,6 +20,12 @@ class MacAgentCommand extends Model
     public function device(): BelongsTo
     {
         return $this->belongsTo(MacDevice::class, 'mac_device_id');
+    }
+
+    /** @return BelongsTo<MacTask, $this> */
+    public function task(): BelongsTo
+    {
+        return $this->belongsTo(MacTask::class, 'mac_task_id');
     }
 
     /**
