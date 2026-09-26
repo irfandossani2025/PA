@@ -63,4 +63,30 @@ class MacAgentHeartbeatTest extends TestCase
         $this->assertSame('dispatched', $approvedCommand->refresh()->status);
         $this->assertNotNull($approvedCommand->claimed_at);
     }
+
+    public function test_heartbeat_marks_stale_dispatched_commands_as_failed_without_retrying_them(): void
+    {
+        $token = 'test-mac-agent-token';
+        $device = MacDevice::factory()->create([
+            'token_hash' => hash('sha256', $token),
+        ]);
+        $staleCommand = MacAgentCommand::factory()->for($device, 'device')->create([
+            'status' => 'dispatched',
+            'claimed_at' => now()->subMinutes(6),
+        ]);
+
+        $this->withToken($token)
+            ->postJson('/api/mac-agent/heartbeat')
+            ->assertOk()
+            ->assertJsonCount(0, 'commands');
+
+        $staleCommand->refresh();
+
+        $this->assertSame('failed', $staleCommand->status);
+        $this->assertSame(
+            'No completion receipt was received within five minutes. Create a new draft if you still want this action.',
+            $staleCommand->result['message'],
+        );
+        $this->assertNotNull($staleCommand->completed_at);
+    }
 }

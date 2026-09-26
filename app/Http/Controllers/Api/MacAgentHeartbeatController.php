@@ -29,6 +29,20 @@ class MacAgentHeartbeatController extends Controller
         ])->save();
 
         $commands = DB::transaction(function () use ($device) {
+            $device->commands()
+                ->where('status', 'dispatched')
+                ->where('claimed_at', '<=', now()->subMinutes(5))
+                ->get()
+                ->each(function (MacAgentCommand $command): void {
+                    $command->forceFill([
+                        'status' => 'failed',
+                        'result' => [
+                            'message' => 'No completion receipt was received within five minutes. Create a new draft if you still want this action.',
+                        ],
+                        'completed_at' => now(),
+                    ])->save();
+                });
+
             return $device->commands()
                 ->where('status', 'approved')
                 ->orderBy('id')
