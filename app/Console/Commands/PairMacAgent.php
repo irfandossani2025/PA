@@ -16,10 +16,18 @@ class PairMacAgent extends Command
      */
     public function handle(): int
     {
+        $name = $this->argument('name');
+
+        if (MacDevice::query()->where('name', $name)->exists()) {
+            $this->components->error('A Mac Agent with this label already exists. It was not changed.');
+
+            return self::FAILURE;
+        }
+
         $token = 'pa_mac_'.str()->random(64);
 
         $device = MacDevice::query()->create([
-            'name' => $this->argument('name'),
+            'name' => $name,
             'token_hash' => hash('sha256', $token),
         ]);
 
