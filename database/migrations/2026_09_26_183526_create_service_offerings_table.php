@@ -20,8 +20,8 @@ return new class extends Migration
             $table->decimal('starting_price_omr', 12, 3)->nullable();
             $table->string('price_note', 255)->nullable();
             $table->text('summary');
-            $table->json('capabilities');
-            $table->json('sales_playbook');
+            $table->longText('capabilities');
+            $table->longText('sales_playbook');
             $table->unsignedSmallInteger('position')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
