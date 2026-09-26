@@ -22,7 +22,7 @@ class AssistantChatTest extends TestCase
             '*' => Http::response([
                 'content' => [[
                     'type' => 'text',
-                    'text' => '{"reply":"I am opening the website on your Mac now.","command":{"label":"Open example","action":"open_url","payload":{"url":"https://example.com"}}}',
+                    'text' => '{"reply":"I am opening the website on your Mac now.","steps":[{"label":"Open example","action":"open_url","payload":{"url":"https://example.com"}}]}',
                 ]],
             ]),
         ]);

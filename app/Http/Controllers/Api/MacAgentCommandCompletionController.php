@@ -38,6 +38,23 @@ class MacAgentCommandCompletionController extends Controller
             'completed_at' => now(),
         ])->save();
 
+        if ($macAgentCommand->mac_task_id !== null) {
+            $task = $macAgentCommand->task;
+
+            if (! $validated['success']) {
+                $task->forceFill(['status' => 'failed', 'result' => $macAgentCommand->result])->save();
+                $task->commands()->where('status', 'queued')->update(['status' => 'cancelled']);
+            } else {
+                $nextCommand = $task->commands()->where('status', 'queued')->orderBy('sequence')->first();
+
+                if ($nextCommand !== null) {
+                    $nextCommand->forceFill(['status' => 'approved'])->save();
+                } else {
+                    $task->forceFill(['status' => 'completed', 'result' => $macAgentCommand->result])->save();
+                }
+            }
+        }
+
         if ($validated['success'] && $macAgentCommand->action === 'inspect_outlook_inbox' && filled($validated['result']['outlook_text'] ?? null)) {
             $owner = User::query()->where('is_owner', true)->first();
 
