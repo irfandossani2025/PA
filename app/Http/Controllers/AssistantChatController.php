@@ -30,7 +30,7 @@ class AssistantChatController extends Controller
         try {
             $assistantResponse = $claude->respond($message, $this->systemPrompt());
             $response = $this->decodeResponse($assistantResponse);
-            $command = $this->createSafeDraft($response['command'] ?? null);
+            $command = $this->createAutonomousTask($response['command'] ?? null);
 
             AssistantConversationMessage::query()->create([
                 'user_id' => $request->user()->id,
@@ -73,7 +73,7 @@ class AssistantChatController extends Controller
     /**
      * @param  array<string, mixed>|null  $candidate
      */
-    private function createSafeDraft(?array $candidate): ?MacAgentCommand
+    private function createAutonomousTask(?array $candidate): ?MacAgentCommand
     {
         if ($candidate === null) {
             return null;
@@ -97,6 +97,8 @@ class AssistantChatController extends Controller
             'label' => str((string) ($candidate['label'] ?? 'Mac task'))->squish()->limit(120)->toString(),
             'mac_device_id' => $device->id,
             'payload' => $payload,
+            'status' => 'approved',
+            'requires_approval' => false,
         ]);
     }
 
@@ -126,7 +128,7 @@ class AssistantChatController extends Controller
     private function systemPrompt(): string
     {
         return <<<'PROMPT'
-You are IRFAN PA, a concise private assistant. Reply in the user's language. You may only propose one of these safe Mac actions: open_url with an HTTPS URL without credentials, open_path with an absolute path, or open_application with a simple application name. Never claim an action has happened. It is only a draft until the owner approves it.
+You are IRFAN PA, a concise private assistant. Reply in the user's language. You may only start one of these safe Mac actions: open_url with an HTTPS URL without credentials, open_path with an absolute path, or open_application with a simple application name. For a valid safe Mac action, it starts automatically. Never claim the work has completed; say it is starting or being sent to the Mac.
 
 Return only JSON with this exact shape:
 {"reply":"short helpful response","command":{"label":"short label","action":"open_url|open_path|open_application","payload":{"url":"https://..."}}}

@@ -13,7 +13,7 @@ class AssistantChatTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_owner_can_turn_a_natural_language_request_into_a_pending_safe_draft(): void
+    public function test_owner_can_start_a_safe_mac_task_without_a_second_approval(): void
     {
         config()->set('services.anthropic.key', 'test-key');
         config()->set('services.anthropic.model', 'test-model');
@@ -22,7 +22,7 @@ class AssistantChatTest extends TestCase
             '*' => Http::response([
                 'content' => [[
                     'type' => 'text',
-                    'text' => '{"reply":"I prepared a draft to open the website.","command":{"label":"Open example","action":"open_url","payload":{"url":"https://example.com"}}}',
+                    'text' => '{"reply":"I am opening the website on your Mac now.","command":{"label":"Open example","action":"open_url","payload":{"url":"https://example.com"}}}',
                 ]],
             ]),
         ]);
@@ -41,13 +41,14 @@ class AssistantChatTest extends TestCase
         $this->assertDatabaseHas('assistant_conversation_messages', [
             'user_id' => $owner->id,
             'role' => 'assistant',
-            'content' => 'I prepared a draft to open the website.',
+            'content' => 'I am opening the website on your Mac now.',
         ]);
         $this->assertDatabaseHas('mac_agent_commands', [
             'mac_device_id' => $device->id,
             'action' => 'open_url',
             'label' => 'Open example',
-            'status' => 'pending',
+            'status' => 'approved',
+            'requires_approval' => false,
         ]);
         Http::assertSent(fn (Request $request): bool => $request->hasHeader('x-api-key'));
     }
