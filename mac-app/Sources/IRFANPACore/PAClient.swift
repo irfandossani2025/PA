@@ -29,7 +29,7 @@ public struct PACommand: Decodable, Identifiable {
 }
 
 public enum CommandResult {
-    case success(message: String)
+    case success(message: String, outlookText: String? = nil)
     case failure(message: String)
 
     public var success: Bool {
@@ -39,8 +39,16 @@ public enum CommandResult {
 
     public var message: String {
         switch self {
-        case let .success(message), let .failure(message): return message
+        case let .success(message, _), let .failure(message): return message
         }
+    }
+
+    public var outlookText: String? {
+        if case let .success(_, outlookText) = self {
+            return outlookText
+        }
+
+        return nil
     }
 }
 
@@ -90,7 +98,7 @@ public struct PAClient {
         request.httpMethod = "POST"
         request.httpBody = try JSONEncoder().encode(CommandCompletionRequest(
             success: result.success,
-            result: .init(message: result.message)
+            result: .init(message: result.message, outlookText: result.outlookText)
         ))
 
         let (_, response) = try await session.data(for: request)
@@ -127,6 +135,12 @@ private struct CommandCompletionRequest: Encodable {
 
 private struct CommandCompletionResult: Encodable {
     let message: String
+    let outlookText: String?
+
+    enum CodingKeys: String, CodingKey {
+        case message
+        case outlookText = "outlook_text"
+    }
 }
 
 public enum JSONValue: Decodable {

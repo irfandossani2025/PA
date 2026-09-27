@@ -38,6 +38,30 @@ enum CommandExecutor {
                 ? .success(message: "Opened the approved application.")
                 : .failure(message: "macOS could not open the approved application.")
 
+        case "inspect_outlook_inbox":
+            let limit: Int
+
+            if let suppliedLimit = command.payload["limit"] {
+                guard case let .integer(value) = suppliedLimit, (1...20).contains(value) else {
+                    return .failure(message: "PA sent an invalid Outlook Inbox limit.")
+                }
+
+                limit = value
+            } else {
+                limit = 10
+            }
+
+            switch await OutlookInboxReader.unreadMessages(limit: limit) {
+            case let .success(outlookText):
+                if outlookText == "NO_UNREAD_MESSAGES" {
+                    return .success(message: "There are no unread Outlook Inbox messages.")
+                }
+
+                return .success(message: "Read up to \(limit) unread Outlook Inbox messages for summarization.", outlookText: outlookText)
+            case let .failure(error):
+                return .failure(message: error.localizedDescription)
+            }
+
         default:
             return .failure(message: "This version of IRFAN PA cannot complete the requested action yet.")
         }
