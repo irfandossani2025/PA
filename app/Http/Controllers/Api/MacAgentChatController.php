@@ -4,15 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AssistantConversationMessage;
+use App\Models\MacDevice;
 use App\Models\User;
-use App\Services\ClaudeClient;
+use App\Services\AssistantTaskPlanner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class MacAgentChatController extends Controller
 {
-    public function store(Request $request, ClaudeClient $claude): JsonResponse
+    public function store(Request $request, AssistantTaskPlanner $taskPlanner): JsonResponse
     {
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:2000'],
@@ -28,7 +29,9 @@ class MacAgentChatController extends Controller
         ]);
 
         try {
-            $reply = str($claude->respond($message, 'You are IRFAN PA Manager. Reply concisely in the user language. State what you will do, but do not claim an unverified task has completed.'))->trim()->limit(1000)->toString();
+            /** @var MacDevice $device */
+            $device = $request->attributes->get('mac_device');
+            $reply = $taskPlanner->plan($owner, $device, $message)['reply'];
         } catch (Throwable) {
             $reply = 'I could not prepare that right now. Please try again in a moment.';
         }
