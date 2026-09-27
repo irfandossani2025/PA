@@ -12,6 +12,8 @@
     <string>online.irfandossani.pa</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleName</key>
     <string>IRFAN PA</string>
     <key>CFBundlePackageType</key>
