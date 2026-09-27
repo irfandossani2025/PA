@@ -33,9 +33,9 @@ final class AgentStore: ObservableObject {
     private var heartbeatTimer: Timer?
 
     init() {
-        if credentialStore.load() != nil {
+        if credentialStore.importLegacyConfigurationIfAvailable() != nil {
             status = .connecting
-            statusMessage = "Starting secure connection…"
+            statusMessage = "Starting secure connection with the existing Mac pairing…"
             startHeartbeatTimer()
             Task { await heartbeatNow() }
         }

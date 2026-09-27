@@ -49,11 +49,44 @@ final class CredentialStore {
             kSecAttrAccount: account,
         ] as CFDictionary)
     }
+
+    func importLegacyConfigurationIfAvailable() -> PACredentials? {
+        guard load() == nil else {
+            return load()
+        }
+
+        let legacyConfigurationURL = FileManager.default.homeDirectoryForCurrentUser
+            .appending(path: "Projects/PA/mac-agent/config.json")
+
+        guard let data = try? Data(contentsOf: legacyConfigurationURL),
+              let configuration = try? JSONDecoder().decode(LegacyAgentConfiguration.self, from: data),
+              let credentials = try? PACredentials(serverURL: configuration.serverURL, token: configuration.token)
+        else {
+            return nil
+        }
+
+        do {
+            try save(credentials)
+            return credentials
+        } catch {
+            return nil
+        }
+    }
 }
 
 private struct StoredCredentials: Codable {
     let serverURL: String
     let token: String
+}
+
+private struct LegacyAgentConfiguration: Decodable {
+    let serverURL: String
+    let token: String
+
+    enum CodingKeys: String, CodingKey {
+        case serverURL = "serverUrl"
+        case token
+    }
 }
 
 private enum KeychainError: LocalizedError {
