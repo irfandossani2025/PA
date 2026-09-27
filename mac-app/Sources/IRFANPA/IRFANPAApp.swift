@@ -27,6 +27,14 @@ struct IRFANPAApp: App {
 
 private struct PADashboardView: View {
     @ObservedObject var agent: AgentStore
+    @State private var selectedSection = Section.command
+
+    private enum Section: String, CaseIterable, Identifiable {
+        case command = "Command Center"
+        case office = "Virtual Office"
+
+        var id: Self { self }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -58,7 +66,26 @@ private struct PADashboardView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 18) {
+            Picker("Workspace", selection: $selectedSection) {
+                ForEach(Section.allCases) { section in
+                    Text(section.rawValue).tag(section)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 28)
+            .padding(.top, 18)
+
+            if selectedSection == .command {
+                commandCenter
+            } else {
+                VirtualOfficeView(isWorking: agent.status == .working || agent.status == .connecting)
+            }
+        }
+        .frame(minWidth: 720, minHeight: 580)
+    }
+
+    private var commandCenter: some View {
+        VStack(alignment: .leading, spacing: 18) {
                 Label(agent.statusMessage, systemImage: "lock.shield")
                     .font(.body)
 
@@ -91,10 +118,8 @@ private struct PADashboardView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(28)
         }
-        .frame(minWidth: 560, minHeight: 440)
+        .padding(28)
     }
 }
 
