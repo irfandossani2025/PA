@@ -2,8 +2,11 @@ import SwiftUI
 
 struct VirtualOfficeView: View {
     let isWorking: Bool
+    let activeSpecialist: String?
 
     private let specialists = [
+        OfficeAgent(name: "Executive Assistant", symbol: "tray.full.fill"),
+        OfficeAgent(name: "Research", symbol: "globe.americas.fill"),
         OfficeAgent(name: "Designer", symbol: "paintpalette.fill"),
         OfficeAgent(name: "Developer", symbol: "chevron.left.forwardslash.chevron.right"),
         OfficeAgent(name: "UI/UX", symbol: "square.on.square"),
@@ -32,7 +35,7 @@ struct VirtualOfficeView: View {
 
                 HStack(spacing: 14) {
                     OfficeSeat(agent: OfficeAgent(name: "PA Manager", symbol: "person.badge.key.fill"), isCabin: true, isBusy: isWorking)
-                    OfficeSeat(agent: OfficeAgent(name: "Personal PA", symbol: "person.crop.circle.badge.checkmark"), isCabin: true, isBusy: isWorking)
+                    OfficeSeat(agent: OfficeAgent(name: "Personal PA", symbol: "person.crop.circle.badge.checkmark"), isCabin: true, isBusy: isWorking && activeSpecialist == "Executive Assistant")
                 }
 
                 Text("SPECIALIST CUBICLES")
@@ -42,7 +45,7 @@ struct VirtualOfficeView: View {
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 135), spacing: 12)], spacing: 12) {
                     ForEach(specialists) { specialist in
-                        OfficeSeat(agent: specialist, isCabin: false, isBusy: false)
+                        OfficeSeat(agent: specialist, isCabin: false, isBusy: activeSpecialist == specialist.name)
                     }
                 }
             }

@@ -35,6 +35,7 @@ final class AgentStore: ObservableObject {
     @Published private(set) var statusMessage = "Pair this Mac with your PA portal to begin."
     @Published private(set) var chatMessages: [ChatMessage] = []
     @Published private(set) var isSendingChat = false
+    @Published private(set) var activeSpecialist: String?
 
     private let credentialStore = CredentialStore()
     private var heartbeatTimer: Timer?
@@ -123,13 +124,16 @@ final class AgentStore: ObservableObject {
             statusMessage = "Completing \(response.commands.count) approved Mac task\(response.commands.count == 1 ? "" : "s")."
 
             for command in response.commands {
+                activeSpecialist = Self.specialist(for: command.action)
                 let result = await CommandExecutor.execute(command)
                 try await client.complete(commandID: command.id, result: result)
             }
 
+            activeSpecialist = nil
             status = .connected
             statusMessage = "Approved Mac work completed."
         } catch {
+            activeSpecialist = nil
             status = .error
             statusMessage = Self.safeErrorMessage(error)
         }
@@ -164,5 +168,18 @@ final class AgentStore: ObservableObject {
     private static func safeErrorMessage(_ error: Error) -> String {
         let message = error.localizedDescription.replacingOccurrences(of: "\n", with: " ")
         return "Connection needs attention: \(String(message.prefix(180)))"
+    }
+
+    private static func specialist(for action: String) -> String {
+        switch action {
+        case "inspect_outlook_inbox":
+            return "Executive Assistant"
+        case "open_url":
+            return "Research"
+        case "open_application", "open_path":
+            return "Full-Stack Developer"
+        default:
+            return "PA Manager"
+        }
     }
 }

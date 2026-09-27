@@ -27,14 +27,6 @@ struct IRFANPAApp: App {
 
 private struct PADashboardView: View {
     @ObservedObject var agent: AgentStore
-    @State private var selectedSection = Section.command
-
-    private enum Section: String, CaseIterable, Identifiable {
-        case command = "Command Center"
-        case office = "Virtual Office"
-
-        var id: Self { self }
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -66,60 +58,56 @@ private struct PADashboardView: View {
 
             Divider()
 
-            Picker("Workspace", selection: $selectedSection) {
-                ForEach(Section.allCases) { section in
-                    Text(section.rawValue).tag(section)
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal, 28)
-            .padding(.top, 18)
-
-            if selectedSection == .command {
+            HSplitView {
                 commandCenter
-            } else {
-                VirtualOfficeView(isWorking: agent.status == .working || agent.status == .connecting)
+                    .frame(minWidth: 360)
+
+                VirtualOfficeView(
+                    isWorking: agent.status == .working || agent.status == .connecting,
+                    activeSpecialist: agent.activeSpecialist
+                )
+                .frame(minWidth: 360)
             }
         }
-        .frame(minWidth: 720, minHeight: 580)
+        .frame(minWidth: 900, minHeight: 640)
     }
 
     private var commandCenter: some View {
-        VStack(alignment: .leading, spacing: 18) {
-                NativeChatView(agent: agent)
+        VStack(alignment: .leading, spacing: 14) {
+            NativeChatView(agent: agent)
 
-                Label(agent.statusMessage, systemImage: "lock.shield")
-                    .font(.body)
+            Label(agent.statusMessage, systemImage: "lock.shield")
+                .font(.body)
 
-                if let heartbeat = agent.lastHeartbeat {
-                    Label("Last check-in: \(heartbeat.formatted(date: .abbreviated, time: .shortened))", systemImage: "clock")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                HStack(spacing: 12) {
-                    Button {
-                        Task { await agent.heartbeatNow() }
-                    } label: {
-                        Label("Check in now", systemImage: "arrow.clockwise")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(!agent.isPaired || agent.status == .working)
-
-                    Button {
-                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                    } label: {
-                        Label("Settings", systemImage: "gearshape")
-                    }
-                    .buttonStyle(.bordered)
-                }
-
-                Spacer()
-
-                Text("IRFAN PA connects outward to your PA server over HTTPS. Your Mac remains protected behind its normal firewall.")
-                    .font(.caption)
+            if let heartbeat = agent.lastHeartbeat {
+                Label("Last check-in: \(heartbeat.formatted(date: .abbreviated, time: .shortened))", systemImage: "clock")
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            HStack(spacing: 12) {
+                Button {
+                    Task { await agent.heartbeatNow() }
+                } label: {
+                    Label("Check in now", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(!agent.isPaired || agent.status == .working)
+
+                Button {
+                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                } label: {
+                    Label("Settings", systemImage: "gearshape")
+                }
+                .buttonStyle(.bordered)
+            }
+
+            Spacer()
+
+            Text("IRFAN PA connects outward to your PA server over HTTPS. Your Mac remains protected behind its normal firewall.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(28)
     }
@@ -144,7 +132,7 @@ private struct NativeChatView: View {
                     }
                 }
             }
-            .frame(minHeight: 130, maxHeight: 210)
+            .frame(minHeight: 260, maxHeight: .infinity)
 
             HStack {
                 TextField("Give PA an outcome-based request…", text: $message, axis: .vertical)
