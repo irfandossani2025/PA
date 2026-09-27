@@ -13,9 +13,7 @@
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleIconFile</key>
-    <string>AppIcon</string>
-    <key>CFBundleIconName</key>
-    <string>AppIcon</string>
+    <string>AppIcon.icns</string>
     <key>CFBundleName</key>
     <string>IRFAN PA</string>
     <key>CFBundlePackageType</key>
