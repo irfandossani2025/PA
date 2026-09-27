@@ -7,6 +7,11 @@ struct IRFANPAApp: App {
     @StateObject private var agent = AgentStore()
 
     var body: some Scene {
+        WindowGroup("IRFAN PA") {
+            PADashboardView(agent: agent)
+        }
+        .defaultSize(width: 620, height: 520)
+
         MenuBarExtra {
             PAStatusView(agent: agent)
         } label: {
@@ -17,6 +22,79 @@ struct IRFANPAApp: App {
         Settings {
             PASettingsView(agent: agent)
         }
+    }
+}
+
+private struct PADashboardView: View {
+    @ObservedObject var agent: AgentStore
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 14) {
+                Image(systemName: agent.menuBarSymbol)
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(agent.statusColor)
+                    .frame(width: 56, height: 56)
+                    .background(agent.statusColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("IRFAN PA")
+                        .font(.title2.weight(.bold))
+                    Text("Your secure Mac work companion")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Text(agent.status.label)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(agent.statusColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(agent.statusColor.opacity(0.12), in: Capsule())
+            }
+            .padding(28)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 18) {
+                Label(agent.statusMessage, systemImage: "lock.shield")
+                    .font(.body)
+
+                if let heartbeat = agent.lastHeartbeat {
+                    Label("Last check-in: \(heartbeat.formatted(date: .abbreviated, time: .shortened))", systemImage: "clock")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                HStack(spacing: 12) {
+                    Button {
+                        Task { await agent.heartbeatNow() }
+                    } label: {
+                        Label("Check in now", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!agent.isPaired || agent.status == .working)
+
+                    Button {
+                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    } label: {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                    .buttonStyle(.bordered)
+                }
+
+                Spacer()
+
+                Text("IRFAN PA connects outward to your PA server over HTTPS. Your Mac remains protected behind its normal firewall.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(28)
+        }
+        .frame(minWidth: 560, minHeight: 440)
     }
 }
 
