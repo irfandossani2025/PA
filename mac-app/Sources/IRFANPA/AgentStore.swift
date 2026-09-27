@@ -7,6 +7,11 @@ import SwiftUI
 
 @MainActor
 final class AgentStore: ObservableObject {
+    struct ChatMessage: Identifiable {
+        let id = UUID()
+        let role: String
+        let content: String
+    }
     enum Status: Equatable {
         case disconnected
         case connecting
@@ -28,6 +33,8 @@ final class AgentStore: ObservableObject {
     @Published private(set) var lastHeartbeat: Date?
     @Published private(set) var status: Status = .disconnected
     @Published private(set) var statusMessage = "Pair this Mac with your PA portal to begin."
+    @Published private(set) var chatMessages: [ChatMessage] = []
+    @Published private(set) var isSendingChat = false
 
     private let credentialStore = CredentialStore()
     private var heartbeatTimer: Timer?
@@ -125,6 +132,23 @@ final class AgentStore: ObservableObject {
         } catch {
             status = .error
             statusMessage = Self.safeErrorMessage(error)
+        }
+    }
+
+    func sendChat(_ message: String) async {
+        let trimmedMessage = message.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedMessage.isEmpty, let credentials = credentialStore.load() else { return }
+
+        chatMessages.append(.init(role: "You", content: trimmedMessage))
+        isSendingChat = true
+        defer { isSendingChat = false }
+
+        do {
+            let response = try await PAClient(credentials: credentials).chat(message: trimmedMessage)
+            chatMessages.append(.init(role: "PA Manager", content: response.reply))
+            await heartbeatNow()
+        } catch {
+            chatMessages.append(.init(role: "PA Manager", content: Self.safeErrorMessage(error)))
         }
     }
 

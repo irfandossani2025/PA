@@ -86,6 +86,8 @@ private struct PADashboardView: View {
 
     private var commandCenter: some View {
         VStack(alignment: .leading, spacing: 18) {
+                NativeChatView(agent: agent)
+
                 Label(agent.statusMessage, systemImage: "lock.shield")
                     .font(.body)
 
@@ -120,6 +122,42 @@ private struct PADashboardView: View {
                     .fixedSize(horizontal: false, vertical: true)
         }
         .padding(28)
+    }
+}
+
+private struct NativeChatView: View {
+    @ObservedObject var agent: AgentStore
+    @State private var message = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Talk to your PA Manager")
+                .font(.headline)
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 8) {
+                    ForEach(agent.chatMessages) { chatMessage in
+                        Text("\(chatMessage.role): \(chatMessage.content)")
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(chatMessage.role == "You" ? Color.blue.opacity(0.12) : Color.secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+                    }
+                }
+            }
+            .frame(minHeight: 130, maxHeight: 210)
+
+            HStack {
+                TextField("Give PA an outcome-based request…", text: $message, axis: .vertical)
+                    .textFieldStyle(.roundedBorder)
+                Button("Send") {
+                    let request = message
+                    message = ""
+                    Task { await agent.sendChat(request) }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || agent.isSendingChat)
+            }
+        }
     }
 }
 

@@ -22,6 +22,10 @@ public struct HeartbeatResponse: Decodable {
     public let commands: [PACommand]
 }
 
+public struct ChatResponse: Decodable {
+    public let reply: String
+}
+
 public struct PACommand: Decodable, Identifiable {
     public let id: Int
     public let action: String
@@ -103,6 +107,17 @@ public struct PAClient {
 
         let (_, response) = try await session.data(for: request)
         try validate(response)
+    }
+
+    public func chat(message: String) async throws -> ChatResponse {
+        var request = try request(path: "/api/mac-agent/chat")
+        request.httpMethod = "POST"
+        request.httpBody = try JSONEncoder().encode(["message": message])
+
+        let (data, response) = try await session.data(for: request)
+        try validate(response)
+
+        return try JSONDecoder().decode(ChatResponse.self, from: data)
     }
 
     private func request(path: String) throws -> URLRequest {
